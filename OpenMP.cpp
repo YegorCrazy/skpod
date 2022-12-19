@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <exception>
+#include <cmath>
 #include "omp.h"
 
 class Matrix {
@@ -62,7 +62,7 @@ int find_leading_row(const Matrix& A, int start_row, int col) {
   {
     int local_lead_row = -1;
     double local_max_abs = 0;
-    #pragma omp for
+    #pragma omp for schedule(dynamic,1)
     for (int i = start_row; i < A.m; ++i) {
       if (!doubles_equal(A[i][col]) && (std::abs(A[i][col]) > cur_max_abs)) {
         local_lead_row = i;
@@ -70,9 +70,11 @@ int find_leading_row(const Matrix& A, int start_row, int col) {
       }
     }
     #pragma omp critical
-    if (local_max_abs > cur_max_abs) {
-      cur_lead_row = local_lead_row;
-      cur_max_abs = local_max_abs;
+    {
+      if (local_max_abs > cur_max_abs) {
+        cur_lead_row = local_lead_row;
+        cur_max_abs = local_max_abs;
+      }
     }
   }
   if (cur_lead_row == -1) {
@@ -134,7 +136,7 @@ int main(int argc, char** argv) {
       break;
     }
     replace_rows(A, i, leading_row);
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(dynamic,1)
     for (int j = i + 1; j < A.m; ++j) {
       reset_elem_to_zero(A, cur_row_num, j, cur_col_num);
     }

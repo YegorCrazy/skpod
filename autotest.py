@@ -3,8 +3,8 @@ import numpy as np
 import testgen
 
 tests_num = 100
-prog_name = 'OpenMP'
-filename = 'testing_file'
+prog_name = 'MPI'
+filename = 'test_input'
 
 def matr_elem_gen():
     return random.choices(
@@ -16,8 +16,9 @@ for k in range(tests_num):
                                        [1, 10], [1, 10],
                                        matr_elem_gen)
     ans = np.linalg.matrix_rank([np.matrix(matr)])[0]
-    prog_ans = int(subprocess.check_output(['./' + prog_name,
-                                            filename,
+    prog_ans = int(subprocess.check_output(['mpiexec',
+                                            './' + prog_name,
+                                            '-n', '4',
                                             'rank'],
                                        universal_newlines=True))
     print(f'Test #{k + 1}, Prog_ans = {prog_ans}, ans = {ans}')

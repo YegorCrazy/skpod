@@ -1,5 +1,7 @@
 normal_algo
 OpenMP
+MPI.cpp
 test_input
 testing_file
 __pycache__
+res

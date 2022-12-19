@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <exception>
+#include <cmath>
 #include "omp.h"
 
 class Matrix {

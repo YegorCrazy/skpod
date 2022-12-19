@@ -4,7 +4,6 @@
 #include <vector>
 #include <cmath>
 #include <unordered_map>
-// #include "/usr/include/x86_64-linux-gnu/mpich/mpi.h"
 #include "mpi.h"
 
 class Matrix {
@@ -145,7 +144,6 @@ int main(int argc, char** argv) {
       new_row.resize(A.n);
       for (int j = i + 1; j < A.m; ++j) {
         int proc_num = get_proc_num(j, mpi_size);
-        MPI_Send(&j, 1, MPI_INT, proc_num, PREPARE_TO_SEND, MPI_COMM_WORLD);
         MPI_Recv(&(new_row[0]), A.n, MPI_DOUBLE, proc_num, j, MPI_COMM_WORLD, &status);
         for (int k = 0; k < A.n; ++k) {
           A[j][k] = new_row[k];
@@ -169,7 +167,6 @@ int main(int argc, char** argv) {
     int row_len;
     MPI_Status status;
     MPI_Bcast(&row_len, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    std::unordered_map<int, std::vector<double>> res_storage;
     while (true) {
       int row_num;
       MPI_Recv(&row_num, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
@@ -183,10 +180,7 @@ int main(int argc, char** argv) {
         MPI_Recv(&(reset[0]), row_len, MPI_DOUBLE, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         MPI_Recv(&col_num, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         auto result = reset_elem_to_zero(lead, reset, col_num);
-        res_storage[row_num] = result;
-      } else if (status.MPI_TAG == PREPARE_TO_SEND) {
-        MPI_Send(&(res_storage[row_num][0]), row_len, MPI_DOUBLE, 0, row_num, MPI_COMM_WORLD);
-        res_storage.erase(row_num);
+        MPI_Send(&(result[0]), row_len, MPI_DOUBLE, 0, row_num, MPI_COMM_WORLD);
       } else if (status.MPI_TAG == BREAK) {
         break;
       }
